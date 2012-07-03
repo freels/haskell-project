@@ -1,5 +1,7 @@
 #!/usr/bin/env runhaskell
-\begin{code}
-import Distribution.Simple (defaultMain)
-main = defaultMain
-\end{code}
+
+> module Main where
+> import Distribution.Simple
+
+> main :: IO ()
+> main = defaultMain
