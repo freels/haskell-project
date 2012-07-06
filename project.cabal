@@ -11,6 +11,10 @@ build-type:       Simple
 extra-source-files:
   README.md
 
+source-repository head
+  type:     git
+  location: http://github.com/freels/haskell-project
+
 -- flags
 
 flag optimize
@@ -45,8 +49,3 @@ test-suite tests
     test-framework-hunit       == 0.2.7,
     QuickCheck,
     HUnit
-
-
-source-repository head
-  type:     git
-  location: http://github.com/freels/haskell-project
