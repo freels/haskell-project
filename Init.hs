@@ -2,9 +2,9 @@
 
 {-# LANGUAGE ViewPatterns #-}
 module Main where
+import Control.Applicative
 import System.Directory
 import System.IO
-import Control.Applicative
 import Data.List
 import Data.Char
 
@@ -12,30 +12,26 @@ main :: IO ()
 main = do
   let fields = ["PROJECT NAME", "AUTHOR", "EMAIL", "PROJECT HOMEPAGE", "REPO"]
   dir       <- getCurrentDirectory
-  let git    = join dir ".git"
-  files     <- filter (not . startswith git) <$> findFiles dir
+  files     <- filter (not . startswith (joinPath dir ".git")) <$> findFiles dir
   subs      <- getTemplateInfo fields
   sequence_ (rewriteFile (flip replaceAll subs) <$> files)
-
-  --where findAndReplace subs str =
+  removeFile (joinPath dir "Init.hs")
 
 findFiles :: FilePath -> IO [FilePath]
 findFiles path = do
-  isFile <- doesFileExist path
-
-  if isFile then return [path]
-  else do
-    files <- filter notDot <$> getDirectoryContents path
-    flattenM (findFiles <$> (join path) <$> files)
+  doesFileExist path >>= \x -> case x of
+    True  -> return [path]
+    False -> do
+      files <- filter notDot <$> getDirectoryContents path
+      flattenM (findFiles <$> (joinPath path) <$> files)
 
 notDot f = f /= ".." && f /= "."
 
 flattenM = fmap (>>= id) . sequence
 
-join a b = a ++ "/" ++ b
+joinPath a b = a ++ "/" ++ b
 
-startswith prefix (stripPrefix prefix -> Just _) = True
-startswith _ _                                   = False
+startswith prefix list = take (length prefix) list == prefix
 
 gsub from to (stripPrefix from -> Just rest) = to ++ (gsub from to rest)
 gsub from to (c:rest)                        = c : (gsub from to rest)
@@ -48,7 +44,7 @@ rewriteFile :: (String -> String) -> FilePath -> IO ()
 rewriteFile f path = do
   contents <- readFile path
   putStrLn ("Writing file " ++ path)
-  putStrLn (f contents)
+  writeFile path (f contents)
 
 getTemplateInfo fields = sequence $ map getSub fields
   where getSub field = (,) field <$> prompt (capitalize field)
