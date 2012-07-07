@@ -44,7 +44,7 @@ gsub from to []                              = []
 
 rewriteFile :: (String -> String) -> FilePath -> IO ()
 rewriteFile f path = do
-  contents <- readFile path
+  contents <- readFile' path
   putStrLn ("Writing file " ++ path)
   writeFile path (f contents)
 
