@@ -10,12 +10,18 @@ import Data.Char
 
 main :: IO ()
 main = do
-  let fields = ["PROJECT NAME", "AUTHOR", "EMAIL", "PROJECT HOMEPAGE", "REPO"]
-  dir       <- getCurrentDirectory
-  files     <- filter (not . startswith (joinPath dir ".git")) <$> findFiles dir
-  subs      <- getTemplateInfo fields
+  let fields   = ["PROJECT NAME", "AUTHOR", "EMAIL", "PROJECT HOMEPAGE", "REPO"]
+  dir         <- getCurrentDirectory
+  let excludes = map (joinPath dir) [".git", "Init.hs"]
+  files       <- filter (not . startsWithAny excludes) <$> findFiles dir
+  subs        <- getTemplateInfo fields
   sequence_ (rewriteFile (flip replaceAll subs) <$> files)
-  removeFile (joinPath dir "Init.hs")
+
+  where
+    gsub' (from, to)       = gsub from to
+    replaceAll             = foldl (flip gsub')
+    startsWithAny ps list  = any (flip startsWith $ list) ps
+    startsWith prefix list = take (length prefix) list == prefix
 
 findFiles :: FilePath -> IO [FilePath]
 findFiles path = do
@@ -25,20 +31,16 @@ findFiles path = do
       files <- filter notDot <$> getDirectoryContents path
       flattenM (findFiles <$> (joinPath path) <$> files)
 
-notDot f = f /= ".." && f /= "."
-
-flattenM = fmap (>>= id) . sequence
+  where
+    notDot f = f /= ".." && f /= "."
+    flattenM = fmap (>>= id) . sequence
 
 joinPath a b = a ++ "/" ++ b
 
-startswith prefix list = take (length prefix) list == prefix
-
+gsub :: String -> String -> String -> String
 gsub from to (stripPrefix from -> Just rest) = to ++ (gsub from to rest)
 gsub from to (c:rest)                        = c : (gsub from to rest)
 gsub from to []                              = []
-
-replaceAll = foldl replace
-  where replace str (from, to) = gsub from to str
 
 rewriteFile :: (String -> String) -> FilePath -> IO ()
 rewriteFile f path = do
@@ -46,14 +48,17 @@ rewriteFile f path = do
   putStrLn ("Writing file " ++ path)
   writeFile path (f contents)
 
-getTemplateInfo fields = sequence $ map getSub fields
-  where getSub field = (,) field <$> prompt (capitalize field)
+  where
+    readFile' path = readFile path >>= \s -> length s `seq` return s
 
-prompt p = do
-  putStr (p ++ ": ") >> (hFlush stdout)
-  getLine >>= \x -> case x of
-    []     -> putStrLn "Cannot be blank." >> prompt p
-    answer -> return answer
+getTemplateInfo fields = sequence $ map getSub fields
+  where
+    getSub field = (,) field <$> prompt (capitalize field)
+    prompt p = do
+      putStr (p ++ ": ") >> (hFlush stdout)
+      getLine >>= \x -> case x of
+        []     -> putStrLn "Cannot be blank." >> prompt p
+        answer -> return answer
 
 capitalize (c:cs) = (toUpper c) : (map toLower cs)
 capitalize []     = []
