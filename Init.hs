@@ -8,48 +8,44 @@ import System.IO
 import Data.List
 import Data.Char
 
+fields   = ["PROJECT NAME", "AUTHOR", "EMAIL", "PROJECT HOMEPAGE", "REPO"]
+excludes = [".git", "Init.hs"]
+
 main :: IO ()
 main = do
-  let fields   = ["PROJECT NAME", "AUTHOR", "EMAIL", "PROJECT HOMEPAGE", "REPO"]
-  dir         <- getCurrentDirectory
-  let excludes = map (joinPath dir) [".git", "Init.hs"]
-  files       <- filter (not . startsWithAny excludes) <$> findFiles dir
-  subs        <- getTemplateInfo fields
+  dir             <- getCurrentDirectory
+  let excludePaths = map (joinPath dir) excludes
+  files           <- filter (not . startsWithAny excludePaths) <$> findFiles dir
+  subs            <- getTemplateInfo fields
   sequence_ (rewriteFile (flip replaceAll subs) <$> files)
 
   where
-    gsub' (from, to)       = gsub from to
-    replaceAll             = foldl (flip gsub')
-    startsWithAny ps list  = any (flip startsWith $ list) ps
-    startsWith prefix list = take (length prefix) list == prefix
+    gsub' str (from, to)   = gsub from to str
+    replaceAll             = foldl gsub'
+    startsWithAny ps list  = any (startsWith $ list) ps
+    startsWith list prefix = take (length prefix) list == prefix
+
+joinPath a b = a ++ "/" ++ b
 
 findFiles :: FilePath -> IO [FilePath]
 findFiles path = do
   doesFileExist path >>= \x -> case x of
     True  -> return [path]
     False -> do
-      files <- filter notDot <$> getDirectoryContents path
-      flattenM (findFiles <$> (joinPath path) <$> files)
+      files       <- getDirectoryContents path
+      let filtered = filter (\x -> x /= ".." && x /= ".") files
+      concat <$> (sequence $ findFiles <$> (joinPath path) <$> filtered)
 
-  where
-    notDot f = f /= ".." && f /= "."
-    flattenM = fmap (>>= id) . sequence
-
-joinPath a b = a ++ "/" ++ b
-
-gsub :: String -> String -> String -> String
 gsub from to (stripPrefix from -> Just rest) = to ++ (gsub from to rest)
 gsub from to (c:rest)                        = c : (gsub from to rest)
 gsub from to []                              = []
 
 rewriteFile :: (String -> String) -> FilePath -> IO ()
 rewriteFile f path = do
-  contents <- readFile' path
+  -- force contents thunk by getting its length.
+  contents <- readFile path >>= \s -> length s `seq` return s
   putStrLn ("Writing file " ++ path)
   writeFile path (f contents)
-
-  where
-    readFile' path = readFile path >>= \s -> length s `seq` return s
 
 getTemplateInfo fields = sequence $ map getSub fields
   where
