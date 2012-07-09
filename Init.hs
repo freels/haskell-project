@@ -18,6 +18,7 @@ main = do
   files           <- filter (not . startsWithAny excludePaths) <$> findFiles dir
   subs            <- getTemplateInfo fields
   sequence_ (rewriteFile (replaceAll subs) <$> files)
+  removeFile $ joinPath dir "Init.hs"
 
   where
     startsWithAny ps list  = any (startsWith $ list) ps
