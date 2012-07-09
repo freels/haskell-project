@@ -15,9 +15,12 @@ main :: IO ()
 main = do
   dir             <- getCurrentDirectory
   let excludePaths = map (joinPath dir) excludes
-  files           <- filter (not . startsWithAny excludePaths) <$> findFiles dir
   subs            <- getTemplateInfo fields
+  files           <- filter (not . startsWithAny excludePaths) <$> findFiles dir
   sequence_ (rewriteFile (replaceAll subs) <$> files)
+  let projName     = snd . head $ subs
+      cabalFile    = joinPath dir (projName ++ ".cabal")
+  renameFile (joinPath dir "project.cabal") (cabalFile)
   removeFile $ joinPath dir "Init.hs"
 
   where
@@ -51,7 +54,7 @@ rewriteFile f path = do
 
 getTemplateInfo fields = sequence $ map getSub fields
   where
-    getSub field = (,) field <$> prompt (capitalize $ gsub "$", "" field)
+    getSub field = (,) field <$> prompt (capitalize $ gsub "$" "" field)
     prompt p = do
       putStr (p ++ ": ") >> (hFlush stdout)
       getLine >>= \x -> case x of
