@@ -1,4 +1,4 @@
-module Main where
+module Test where
 
 import Test.Framework (defaultMain, testGroup)
 import Test.Framework.Providers.HUnit
@@ -26,5 +26,3 @@ tests = [
 
 -- convenient whilst in ghci
 runTests = defaultMain tests
-
-main = runTests
