@@ -1,10 +1,5 @@
 -- see http://neilmitchell.blogspot.com/2010/01/better-ghci-files.html
 
-:set -w -fwarn-unused-binds -fwarn-unused-imports
-:set -isrc
-:set -itest
 :set -main-is Test.runTests
-
-:load test/Test.hs
 
 :def test const $ return $ ":!cabal-dev install --enable-tests"
