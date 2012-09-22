@@ -9,7 +9,7 @@ import Data.List
 import Data.Char
 
 fields   = ["PNAME", "PAUTHOR", "PEMAIL", "PHOMEPAGE", "PREPO"]
-excludes = [".git", "Init.hs"]
+excludes = [".git", "Init.hs", "cabal-dev", "dist"]
 
 main :: IO ()
 main = do
@@ -54,7 +54,7 @@ rewriteFile f path = do
 
 getTemplateInfo fields = sequence $ map getSub fields
   where
-    getSub field = (,) field <$> prompt (capitalize $ gsub "$" "" field)
+    getSub field = (,) field <$> prompt (capitalize $ drop 1 field)
     prompt p = do
       putStr (p ++ ": ") >> (hFlush stdout)
       getLine >>= \x -> case x of
