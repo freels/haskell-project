@@ -31,11 +31,11 @@ This was somewhat unintuitive when starting out. With ruby projects,
 there's `rake test` or `rake spec`, with Scala there's `sbt test`. The
 current state of Haskell seems to be different with every project.
 
-For now, the best one-liner seems to be:
+For now, the best one-liner seems to be
 
     $ cabal-dev install --enable-tests
 
-Additionally, cabal-dev's ghci wrapper is nice. Start up ghci with:
+Additionally, cabal-dev's ghci wrapper is nice. Start up ghci with
 
     $ cabal-dev ghci
 
