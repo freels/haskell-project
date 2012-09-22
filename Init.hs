@@ -8,7 +8,7 @@ import System.IO
 import Data.List
 import Data.Char
 
-fields   = ["$NAME", "$AUTHOR", "$EMAIL", "$HOMEPAGE", "$REPO"]
+fields   = ["PNAME", "PAUTHOR", "PEMAIL", "PHOMEPAGE", "PREPO"]
 excludes = [".git", "Init.hs"]
 
 main :: IO ()
