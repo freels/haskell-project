@@ -20,10 +20,10 @@ Haskell has pretty good library management tools (via Cabal and
 in that by default libraries are installed into a global namespace,
 and different versions have a habit of stomping on each other.
 
-Thankfully, there are a few tools that help solve this issue, mostly
-by allowing you to easily restrict installing dependencies to a
-per-project environment. I found `cabal-dev` to be the most
-straightforward to use, though there is also `hsenv` to check out.
+Thankfully, 'cabal-dev' mostly solves this issue, by installing
+dependencies in a per-project environment. Although, I found
+`cabal-dev` to be the most straightforward to use, there are a few
+other similar tools worth checking out, such as `hsenv` or `capri`.
 
 ## Development Workflow
 
