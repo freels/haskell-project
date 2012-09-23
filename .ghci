@@ -1,5 +1,3 @@
 -- see http://neilmitchell.blogspot.com/2010/01/better-ghci-files.html
 
-:set -main-is Test.runTests
-
 :def test const $ return $ ":!cabal-dev install --enable-tests"
