@@ -23,16 +23,6 @@ flag optimize
 
 -- build artifacts
 
-executable hello
-  main-is:          HelloMain.hs
-  hs-source-dirs:   bin
-  default-language: Haskell2010
-  ghc-options:      -Wall
-
-  build-depends:
-    PNAME,
-    base >= 4 && < 6
-
 library
   hs-source-dirs:   src
   default-language: Haskell2010
@@ -46,6 +36,16 @@ library
 
   exposed-modules:
     Hello
+
+executable hello
+  main-is:          HelloMain.hs
+  hs-source-dirs:   bin
+  default-language: Haskell2010
+  ghc-options:      -Wall
+
+  build-depends:
+    PNAME,
+    base >= 4 && < 6
 
 test-suite tests
   type:             exitcode-stdio-1.0
